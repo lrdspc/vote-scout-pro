@@ -16,6 +16,10 @@ import {
 } from "lucide-react";
 import { InteractiveMap } from "./InteractiveMap";
 import { CreateResearchModal } from "./CreateResearchModal";
+import { AutoSyncStatus } from "@/components/auto/AutoSyncStatus";
+import { AutoDistributionPanel } from "@/components/auto/AutoDistributionPanel";
+import { AutoAlertSystem } from "@/components/auto/AutoAlertSystem";
+import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 
 interface Research {
   id: string;
@@ -51,7 +55,8 @@ interface Alert {
 
 export const AdminDashboard = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedTab, setSelectedTab] = useState<'overview' | 'research' | 'researchers' | 'map'>('overview');
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'research' | 'researchers' | 'map' | 'automation'>('overview');
+  const { data: realtimeData } = useRealtimeUpdates('demo-research');
 
   // Mock data
   const researches: Research[] = [
@@ -193,7 +198,8 @@ export const AdminDashboard = () => {
               { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
               { id: 'research', label: 'Pesquisas', icon: TrendingUp },
               { id: 'researchers', label: 'Pesquisadores', icon: Users },
-              { id: 'map', label: 'Mapa Interativo', icon: MapPin }
+              { id: 'map', label: 'Mapa Interativo', icon: MapPin },
+              { id: 'automation', label: 'Automação', icon: AlertTriangle }
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -441,6 +447,35 @@ export const AdminDashboard = () => {
                 <InteractiveMap />
               </CardContent>
             </Card>
+          </div>
+        )}
+        {selectedTab === 'automation' && (
+          <div className="space-y-6">
+            <AutoSyncStatus />
+            <AutoDistributionPanel 
+              researchers={researchers.map(r => ({ 
+                id: r.id,
+                name: r.name, 
+                efficiency: 0.8 + Math.random() * 0.2,
+                currentLoad: r.completedInterviews,
+                expertise: ['eleitorais'],
+                location: { lat: -23.550520, lng: -46.633309 },
+                status: r.status === 'active' ? 'available' as const : 'offline' as const
+              }))} 
+              regions={[
+                {
+                  id: 'centro',
+                  name: 'Centro',
+                  targetInterviews: 150,
+                  completedInterviews: 120,
+                  priority: 3,
+                  difficulty: 2,
+                  coordinates: { lat: -23.550520, lng: -46.633309 }
+                }
+              ]} 
+              onDistributionUpdate={() => {}} 
+            />
+            <AutoAlertSystem />
           </div>
         )}
       </main>
